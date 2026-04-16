@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  serverExternalPackages: ["sequelize", "sqlite3", "pg", "pg-hstore"],
 };
 
 export default nextConfig;
