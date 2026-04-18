@@ -1,18 +1,71 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/store/userSlice";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
+  const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    general: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: value,
+    });
+
+    setErrors({
+      ...errors,
+      [name]: "",
+      general: "",
+    });
+  }
+
+  function validate() {
+    const newErrors = {
+      email: "",
+      password: "",
+      general: "",
+    };
+
+    let isValid = true;
+
+    if (!form.email.trim()) {
+      newErrors.email = "L'email est obligatoire";
+      isValid = false;
+    }
+
+    if (!form.password.trim()) {
+      newErrors.password = "Le mot de passe est obligatoire";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  }
+
+  async function handleLogin(e) {
     e.preventDefault();
 
-    if (!email || !password) {
-      alert("Tous les champs sont obligatoires");
-      return;
-    }
+    if (!validate()) return;
+
+    setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -20,64 +73,81 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(form),
       });
 
-      const text = await res.text();
-      const data = text ? JSON.parse(text) : {};
+      const data = await res.json();
 
       if (res.ok) {
-        document.cookie = `token=${data.token}; path=/`;
-        window.location.href = "/dashboard";
+        // Redux
+        dispatch(setUser(data.user));
+
+        // 🔥 REDIRECTION CORRIGÉE
+        router.push("/projects");
       } else {
-        alert(data.message || "Erreur login");
+        setErrors((prev) => ({
+          ...prev,
+          general: data.message || "Erreur login",
+        }));
       }
     } catch (error) {
-      alert("Erreur serveur");
       console.log(error);
+      setErrors((prev) => ({
+        ...prev,
+        general: "Erreur serveur",
+      }));
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Login</h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6">
+        <h1 className="text-3xl font-bold mb-6 text-center">Connexion</h1>
 
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: "10px" }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{
-              width: "250px",
-              padding: "10px",
-              border: "1px solid black",
-              borderRadius: "5px",
-            }}
-          />
-        </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
+          </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "250px",
-              padding: "10px",
-              border: "1px solid black",
-              borderRadius: "5px",
-            }}
-          />
-        </div>
+          <div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Mot de passe"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
+          </div>
 
-        <button type="submit">Se connecter</button>
-      </form>
+          {errors.general && (
+            <p className="text-red-500 text-sm">{errors.general}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-2 rounded-lg"
+          >
+            {loading ? "Connexion..." : "Se connecter"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

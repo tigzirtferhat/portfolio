@@ -1,26 +1,33 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  const token = request.cookies.get("token");
+  const token = request.cookies.get("token")?.value;
+  const { pathname } = request.nextUrl;
 
-  const url = request.nextUrl;
+  // Pages publiques
+  const publicRoutes = ["/", "/login", "/inscription"];
 
-  // routes protégées
-  if (url.pathname.startsWith("/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  const isPublicRoute = publicRoutes.includes(pathname);
+
+  // Si la route n'est pas publique et qu'il n'y a pas de token
+  if (!isPublicRoute && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // empêcher retour login si connecté
-  if (url.pathname === "/login") {
-    if (token) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+  // Si déjà connecté, empêcher retour à login/inscription
+  if ((pathname === "/login" || pathname === "/inscription") && token) {
+    return NextResponse.redirect(new URL("/projects", request.url));
   }
 
   return NextResponse.next();
 }
+
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: [
+    /*
+     * Appliquer le middleware à toutes les routes
+     * sauf API, fichiers Next.js, images, favicon...
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

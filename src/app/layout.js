@@ -3,6 +3,7 @@ import "./globals.css";
 import { sequelize } from "@/models/relation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import StoreProvider from "@/store/Provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +20,7 @@ export const metadata = {
   description: "Projet portfolio",
 };
 
-// 🔹 Initialisation DB
+// Initialisation DB
 async function initDb() {
   try {
     await sequelize.sync();
@@ -37,18 +38,15 @@ export default async function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <StoreProvider>
+          <Navbar />
 
-        {/* NAVBAR */}
-        <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
 
-        {/* CONTENU PRINCIPAL */}
-        <main className="flex-1">
-          {children}
-        </main>
-
-        {/* FOOTER */}
-        <Footer />
-
+          <Footer />
+        </StoreProvider>
       </body>
     </html>
   );
