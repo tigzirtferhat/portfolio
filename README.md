@@ -29,7 +29,7 @@ Il permet de gérer des projets et des témoignages avec authentification.
 
 
 ### Accueil
-![Accueil](public/accueille.png)
+![Accueil](public/accueil.png)
 
 ### Login
 ![Login](public/login.png)
