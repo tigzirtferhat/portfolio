@@ -29,16 +29,16 @@ Il permet de gérer des projets et des témoignages avec authentification.
 
 
 ### Accueil
-![Accueil](portfolio-next/public/accueille.png)
+![Accueil](public/accueille.png)
 
 ### Login
-![Login](portfolio-next/public/login.png)
+![Login](public/login.png)
 
 ### Projets
-![Projets](portfolio-next/public/projects.png)
+![Projets](public/projects.png)
 
 ### Témoignages
-![Témoignages](portfolio-next/public/temoignage.png)
+![Témoignages](public/temoignage.png)
 
 ---
 
